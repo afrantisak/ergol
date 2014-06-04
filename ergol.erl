@@ -1,6 +1,7 @@
 -module(ergol).
 
 -export([main/0]).
+-export([evolve/1, get/3, set/4, replace/3]).
 
 main() ->
     Gen1 = [[0, 1, 0, 0, 0],
@@ -17,7 +18,7 @@ main() ->
     io:format("Passed~n").
     
 evolve(Gen1) ->
-    evolve(Gen1, Gen1, 0, 0).
+    evolve(Gen1, Gen1, 1, 1).
 
 evolve(Gen1, Gen2, X, Y) ->
     case get(Gen1, X, Y) of
@@ -44,9 +45,9 @@ neighbors(_Gen, _X, _Y) ->
 get(Gen, X, Y) ->
     lists:nth(X, lists:nth(Y, Gen)).
 
-set(Gen, X, Y, val) ->
-    replace(Y, replace(X, val, lists:nth(Y, Gen)), Gen).
+set(Gen, X, Y, Val) ->
+    replace(Y, replace(X, Val, lists:nth(Y, Gen)), Gen).
 
 replace(Index, Value, List) ->
-    {Left, [_ | Right]} = lists:split(Index, List),
-    lists:flatten([Left, Value, Right]).
+    {Left, [_ | Right]} = lists:split(Index - 1, List),
+    lists:append([Left, [Value], Right]).
