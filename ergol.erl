@@ -1,14 +1,16 @@
 -module(ergol).
 
 -export([main/0]).
--export([neighbors/3, neighbors/7, evolve/1, evolve/6, get/3, set/4, replace/3, gen/0]).
 
-gen() ->
-    [[0, 1, 0, 0, 0],
-     [1, 0, 0, 1, 1],
-     [1, 1, 0, 0, 1],
-     [0, 1, 0, 0, 0],
-     [1, 0, 0, 0, 1]].
+% "Game of Life".
+% The input will be a game board of cells, either alive (1) or dead (0).
+% The code should take this board and create a new board for the
+% next generation based on the following rules:
+%  1) Any live cell with fewer than two live neighbours dies (under-population)
+%  2) Any live cell with two or three live neighbours lives on to
+%     the next generation (survival)
+%  3) Any live cell with more than three live neighbours dies (overcrowding)
+%  4) Any dead cell with exactly three live neighbours becomes a live cell (reproduction)
 
 main() ->
     Gen1 = [[0, 1, 0, 0, 0],
@@ -44,16 +46,14 @@ evolve(Gen1, Gen2, X, Y, MaxX, MaxY) ->
             evolve(Gen1, Gen3, X, Y + 1, MaxX, MaxY)
     end.
 
-dead(Gen1, Gen2, X, Y) ->
-    io:format("dead~n"),
+live(Gen1, Gen2, X, Y) ->
     case neighbors(Gen1, X, Y) of
         2 -> set(Gen2, X, Y, 1);
         3 -> set(Gen2, X, Y, 1);
         _ -> set(Gen2, X, Y, 0)
     end.
 
-live(Gen1, Gen2, X, Y) ->
-    io:format("live~n"),
+dead(Gen1, Gen2, X, Y) ->
     case neighbors(Gen1, X, Y) of
         3 -> set(Gen2, X, Y, 1);
         _ -> set(Gen2, X, Y, 0)
@@ -64,10 +64,7 @@ neighbors(Gen1, X, Y) ->
     R = erlang:min(5, X + 1),
     T = erlang:max(1, Y - 1),
     B = erlang:min(5, Y + 1),
-    Sum = neighbors(Gen1, 0, L, T, R, B, T),
-    SumMinus = Sum - get(Gen1, X, Y),
-    io:format("X: ~p (~p, ~p) Y: ~p (~p, ~p) Sum: ~p~n", [X, L, R, Y, T, B, SumMinus]),
-    SumMinus.
+    Sum = neighbors(Gen1, 0, L, T, R, B, T) - get(Gen1, X, Y).
 
 neighbors(Gen1, Total, X, Y, MaxX, MaxY, MinY) ->
     Total1 = Total + get(Gen1, X, Y),
