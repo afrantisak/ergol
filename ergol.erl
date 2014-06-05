@@ -13,72 +13,88 @@
 %  4) Any dead cell with exactly three live neighbours becomes a live cell (reproduction)
 
 test() ->
-    Gen1 = [[0, 1, 0, 0, 0],
-            [1, 0, 0, 1, 1],
-            [1, 1, 0, 0, 1],
-            [0, 1, 0, 0, 0],
-            [1, 0, 0, 0, 1]],
-    Gen2 = [[0, 0, 0, 0, 0],
-            [1, 0, 1, 1, 1],
-            [1, 1, 1, 1, 1],
-            [0, 1, 0, 0, 0],
-            [0, 0, 0, 0, 0]],
-    Gen2 = evolve(Gen1),
+    Input =  [[0, 1, 0, 0, 0],
+              [1, 0, 0, 1, 1],
+              [1, 1, 0, 0, 1],
+              [0, 1, 0, 0, 0],
+              [1, 0, 0, 0, 1]],
+    Output = [[0, 0, 0, 0, 0],
+              [1, 0, 1, 1, 1],
+              [1, 1, 1, 1, 1],
+              [0, 1, 0, 0, 0],
+              [0, 0, 0, 0, 0]],
+    Output = evolve(Input),
     io:format("Passed~n").
-    
-evolve(Gen1) ->
-    griderate(Gen1, Gen1, fun evolve1/4, 1, 1, 5, 5, 1).
 
-evolve1(Gen1, Gen2, X, Y) ->
-    case get(Gen1, X, Y) of
-        1 -> live(Gen1, Gen2, X, Y);
-        0 -> dead(Gen1, Gen2, X, Y)
+-record(coord, {x, y}).
+-record(size, {min, max}).
+    
+evolve(Input) ->
+    Start = #coord{x = 1, y = 1},
+    Size = #size{
+              min = Start,
+              max = #coord
+              {
+                x = length(lists:nth(1, Input)), 
+                y = length(Input)
+              }
+             },
+    griderate(Input, Input, fun evolve1/4, Start, Size).
+
+evolve1(Input, Output, Coord, Size) ->
+    case get_value_at_coordinate(Input, Coord) of
+        1 -> live(Input, Output, Coord, Size);
+        0 -> dead(Input, Output, Coord, Size)
     end.
 
-griderate(Input, Output, Function, X, Y, MaxX, MaxY, MinY) ->
+griderate(Input, Output, Function, 
+          Start = #coord{x = X, y = Y}, 
+          Size = #size{min = #coord{y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
     %% griderate == grid + iterate.  get it?
-    Output1 = Function(Input, Output, X, Y),
+    Output1 = Function(Input, Output, Start, Size),
     case Y of
         MaxY ->
             case X of
                 MaxX ->
                     Output1;
                 _ ->
-                    griderate(Input, Output1, Function, X + 1, MinY, MaxX, MaxY, MinY)
+                    griderate(Input, Output1, Function, #coord{x = X + 1, y = MinY}, Size)
             end;
         _ ->
-            griderate(Input, Output1, Function, X, Y + 1, MaxX, MaxY, MinY)
+            griderate(Input, Output1, Function, #coord{x = X, y = Y + 1}, Size)
     end.
 
-get_sum(Gen1, Total, X, Y) ->
-    Total + get(Gen1, X, Y).
+get_sum(Input, Total, Coord, _Size) ->
+    Total + get_value_at_coordinate(Input, Coord).
 
-neighbors(Gen1, X, Y) ->
-    L = erlang:max(1, X - 1),
-    R = erlang:min(5, X + 1),
-    T = erlang:max(1, Y - 1),
-    B = erlang:min(5, Y + 1),
-    griderate(Gen1, 0, fun get_sum/4, L, T, R, B, T) - get(Gen1, X, Y).
+neighbors(Input, Coord = #coord{x = X, y = Y}, 
+          #size{min = #coord{x = MinX, y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
+    X1 = erlang:max(MinX, X - 1),
+    XN = erlang:min(MaxX, X + 1),
+    Y1 = erlang:max(MinY, Y - 1),
+    YN = erlang:min(MaxY, Y + 1),
+    Neighbors = #size{min = #coord{x = X1, y = Y1}, max = #coord{x = XN, y = YN}},
+    griderate(Input, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - get_value_at_coordinate(Input, Coord).
 
-live(Gen1, Gen2, X, Y) ->
-    case neighbors(Gen1, X, Y) of
-        2 -> set(Gen2, X, Y, 1);
-        3 -> set(Gen2, X, Y, 1);
-        _ -> set(Gen2, X, Y, 0)
+live(Gen1, Gen2, Coord, Size) ->
+    case neighbors(Gen1, Coord, Size) of
+        2 -> set_value_at_coordinate(Gen2, Coord, 1);
+        3 -> set_value_at_coordinate(Gen2, Coord, 1);
+        _ -> set_value_at_coordinate(Gen2, Coord, 0)
     end.
 
-dead(Gen1, Gen2, X, Y) ->
-    case neighbors(Gen1, X, Y) of
-        3 -> set(Gen2, X, Y, 1);
-        _ -> set(Gen2, X, Y, 0)
+dead(Gen1, Gen2, Coord, Size) ->
+    case neighbors(Gen1, Coord, Size) of
+        3 -> set_value_at_coordinate(Gen2, Coord, 1);
+        _ -> set_value_at_coordinate(Gen2, Coord, 0)
     end.
 
-get(Gen, X, Y) ->
+get_value_at_coordinate(Gen, #coord{x = X, y = Y}) ->
     lists:nth(X, lists:nth(Y, Gen)).
 
-set(Gen, X, Y, Val) ->
-    replace(Y, replace(X, Val, lists:nth(Y, Gen)), Gen).
+set_value_at_coordinate(Gen, #coord{x = X, y = Y}, Val) ->
+    replace_single_value_in_list(Y, replace_single_value_in_list(X, Val, lists:nth(Y, Gen)), Gen).
 
-replace(Index, Value, List) ->
+replace_single_value_in_list(Index, Value, List) ->
     {Left, [_ | Right]} = lists:split(Index - 1, List),
     lists:append([Left, [Value], Right]).
