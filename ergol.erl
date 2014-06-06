@@ -40,8 +40,8 @@ evolve(Input_board) ->
 
 evolve_cell(Input_board, Output_board, Coord, Size) ->
     case get_value_at_coordinate(Input_board, Coord) of
-        1 -> live(Input_board, Output_board, Coord, Size);
-        0 -> dead(Input_board, Output_board, Coord, Size)
+        1 -> live_cell(Input_board, Output_board, Coord, Size);
+        0 -> dead_cell(Input_board, Output_board, Coord, Size)
     end.
 
 iterate_2d(Input_board, Output_board, Function, Start, 
@@ -76,14 +76,14 @@ neighbors(Input_board, Coord = #coord{x = X, y = Y},
     Neighbors = #size{min = #coord{x = X1, y = Y1}, max = #coord{x = XN, y = YN}},
     iterate_2d(Input_board, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - get_value_at_coordinate(Input_board, Coord).
 
-live(Gen1, Gen2, Coord, Size) ->
+live_cell(Gen1, Gen2, Coord, Size) ->
     case neighbors(Gen1, Coord, Size) of
         2 -> set_value_at_coordinate(Gen2, Coord, 1);
         3 -> set_value_at_coordinate(Gen2, Coord, 1);
         _ -> set_value_at_coordinate(Gen2, Coord, 0)
     end.
 
-dead(Gen1, Gen2, Coord, Size) ->
+dead_cell(Gen1, Gen2, Coord, Size) ->
     case neighbors(Gen1, Coord, Size) of
         3 -> set_value_at_coordinate(Gen2, Coord, 1);
         _ -> set_value_at_coordinate(Gen2, Coord, 0)
