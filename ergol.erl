@@ -29,52 +29,51 @@ test() ->
 -record(coord, {x, y}).
 -record(size, {min, max}).
     
-evolve(Input) ->
-    Start = #coord{x = 1, y = 1},
-    Size = #size{
-              min = Start,
+evolve(Input_board) ->
+    Start_cell = #coord{x = 1, y = 1},
+    Board_size = #size{
+              min = Start_cell,
               max = #coord
               {
-                x = length(lists:nth(1, Input)), 
-                y = length(Input)
+                x = length(lists:nth(1, Input_board)), 
+                y = length(Input_board)
               }
              },
-    griderate(Input, Input, fun evolve1/4, Start, Size).
+    iterate_2d(Input_board, Input_board, fun evolve_cell/4, Start_cell, Board_size).
 
-evolve1(Input, Output, Coord, Size) ->
-    case get_value_at_coordinate(Input, Coord) of
-        1 -> live(Input, Output, Coord, Size);
-        0 -> dead(Input, Output, Coord, Size)
+evolve_cell(Input_board, Output_board, Coord, Size) ->
+    case get_value_at_coordinate(Input_board, Coord) of
+        1 -> live(Input_board, Output_board, Coord, Size);
+        0 -> dead(Input_board, Output_board, Coord, Size)
     end.
 
-griderate(Input, Output, Function, 
-          Start = #coord{x = X, y = Y}, 
+iterate_2d(Input_board, Output_board, Function, Start = #coord{x = X, y = Y}, 
           Size = #size{min = #coord{y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
-    %% griderate == grid + iterate.  get it?
-    Output1 = Function(Input, Output, Start, Size),
+    Output_board1 = Function(Input_board, Output_board, Start, Size),
     case Y of
         MaxY ->
             case X of
                 MaxX ->
-                    Output1;
+                    Output_board1;
                 _ ->
-                    griderate(Input, Output1, Function, #coord{x = X + 1, y = MinY}, Size)
+                    iterate_2d(Input_board, Output_board1, Function, #coord{x = X + 1, y = MinY}, Size)
             end;
         _ ->
-            griderate(Input, Output1, Function, #coord{x = X, y = Y + 1}, Size)
+            iterate_2d(Input_board, Output_board1, Function, #coord{x = X, y = Y + 1}, Size)
     end.
 
-get_sum(Input, Total, Coord, _Size) ->
-    Total + get_value_at_coordinate(Input, Coord).
+get_sum(Input_board, Total, Coord, _Size) ->
+    Total + get_value_at_coordinate(Input_board, Coord).
 
-neighbors(Input, Coord = #coord{x = X, y = Y}, 
+neighbors(Input_board, Coord = #coord{x = X, y = Y}, 
           #size{min = #coord{x = MinX, y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
+    %% determine the boundary rectangle of our neighbors
     X1 = erlang:max(MinX, X - 1),
     XN = erlang:min(MaxX, X + 1),
     Y1 = erlang:max(MinY, Y - 1),
     YN = erlang:min(MaxY, Y + 1),
     Neighbors = #size{min = #coord{x = X1, y = Y1}, max = #coord{x = XN, y = YN}},
-    griderate(Input, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - get_value_at_coordinate(Input, Coord).
+    iterate_2d(Input_board, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - get_value_at_coordinate(Input_board, Coord).
 
 live(Gen1, Gen2, Coord, Size) ->
     case neighbors(Gen1, Coord, Size) of
