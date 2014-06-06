@@ -33,12 +33,9 @@ evolve(Input_board) ->
     Start_cell = #coord{x = 1, y = 1},
     Board_size = #size{
               min = Start_cell,
-              max = #coord
-              {
+              max = #coord{
                 x = length(lists:nth(1, Input_board)), 
-                y = length(Input_board)
-              }
-             },
+                y = length(Input_board)}},
     iterate_2d(Input_board, Input_board, fun evolve_cell/4, Start_cell, Board_size).
 
 evolve_cell(Input_board, Output_board, Coord, Size) ->
@@ -47,19 +44,23 @@ evolve_cell(Input_board, Output_board, Coord, Size) ->
         0 -> dead(Input_board, Output_board, Coord, Size)
     end.
 
-iterate_2d(Input_board, Output_board, Function, Start = #coord{x = X, y = Y}, 
-          Size = #size{min = #coord{y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
+iterate_2d(Input_board, Output_board, Function, Start, 
+          Size = #size{max = #coord{x = MaxX, y = MaxY}}) ->
     Output_board1 = Function(Input_board, Output_board, Start, Size),
-    case Y of
+    case Start#coord.y of
+        %Size#size.max#coord.y ->
         MaxY ->
-            case X of
+            case Start#coord.x of
+                %Size#size.max#coord.x ->
                 MaxX ->
                     Output_board1;
                 _ ->
-                    iterate_2d(Input_board, Output_board1, Function, #coord{x = X + 1, y = MinY}, Size)
+                    NextColumn = #coord{x = Start#coord.x + 1, y = Size#size.min#coord.y},
+                    iterate_2d(Input_board, Output_board1, Function, NextColumn, Size)
             end;
         _ ->
-            iterate_2d(Input_board, Output_board1, Function, #coord{x = X, y = Y + 1}, Size)
+            NextRow = #coord{x = Start#coord.x, y = Start#coord.y + 1},
+            iterate_2d(Input_board, Output_board1, Function, NextRow, Size)
     end.
 
 get_sum(Input_board, Total, Coord, _Size) ->
