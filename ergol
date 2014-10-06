@@ -26,6 +26,12 @@ main(_) ->
     Output = evolve(Input),
     io:format("Passed~n").
 
+evolve(live, Neighbors) when Neighbors < 2  -> dead; %% underpopulation
+evolve(live, Neighbors) when Neighbors > 3  -> dead; %% overcrowding
+evolve(live, _) -> live; %% survival
+evolve(dead, 3) -> live; %% reproduction
+evolve(dead, _) -> dead.
+
 -record(coord, {x, y}).
 -record(size, {min, max}).
     
@@ -36,22 +42,13 @@ evolve(Input_board) ->
     iterate_board(Input_board, Input_board, fun evolve_cell/4, Upper_left, Board_size).
 
 evolve_cell(Input_board, Output_board, Coord, Size) ->
-    Value = get_value_at_coordinate(Input_board, Coord),
+    Value = get_value(Input_board, Coord),
     evolve_value(Value, Input_board, Output_board, Coord, Size).
 
 evolve_value(State, Input_board, Output_board, Coord, Size) ->
     Neighbors = neighbors(Input_board, Coord, Size),
     New_value = evolve(State, Neighbors),
-    set_value_at_coordinate(Output_board, Coord, New_value).
-
-evolve(live, 2) -> live;
-evolve(live, 3) -> live;
-evolve(live, _) -> dead;
-evolve(dead, 3) -> live;
-evolve(dead, _) -> dead.    
-
-as_int(live) -> 1;
-as_int(dead) -> 0.
+    set_value(Output_board, Coord, New_value).
 
 iterate_board(Input_board, Output_board, Function, Start, Size = #size{max = #coord{x = MaxX, y = MaxY}}) ->
     Output_board1 = Function(Input_board, Output_board, Start, Size),
@@ -69,8 +66,11 @@ iterate_board(Input_board, Output_board, Function, Start, Size = #size{max = #co
             iterate_board(Input_board, Output_board1, Function, NextRow, Size)
     end.
 
+as_int(live) -> 1;
+as_int(dead) -> 0.
+
 get_sum(Input_board, Total, Coord, _Size) ->
-    Total + as_int(get_value_at_coordinate(Input_board, Coord)).
+    Total + as_int(get_value(Input_board, Coord)).
 
 neighbors(Input_board, Coord = #coord{x = X, y = Y}, 
           #size{min = #coord{x = MinX, y = MinY}, max = #coord{x = MaxX, y = MaxY}}) ->
@@ -79,13 +79,14 @@ neighbors(Input_board, Coord = #coord{x = X, y = Y},
     XN = erlang:min(MaxX, X + 1),
     Y1 = erlang:max(MinY, Y - 1),
     YN = erlang:min(MaxY, Y + 1),
+    %% if we are at the edge, do not fall off the board
     Neighbors = #size{min = #coord{x = X1, y = Y1}, max = #coord{x = XN, y = YN}},
-    iterate_board(Input_board, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - as_int(get_value_at_coordinate(Input_board, Coord)).
+    iterate_board(Input_board, 0, fun get_sum/4, #coord{x = X1, y = Y1}, Neighbors) - as_int(get_value(Input_board, Coord)).
 
-get_value_at_coordinate(Gen, #coord{x = X, y = Y}) ->
+get_value(Gen, #coord{x = X, y = Y}) ->
     lists:nth(X, lists:nth(Y, Gen)).
 
-set_value_at_coordinate(Gen, #coord{x = X, y = Y}, Val) ->
+set_value(Gen, #coord{x = X, y = Y}, Val) ->
     replace_single_value_in_list(Y, replace_single_value_in_list(X, Val, lists:nth(Y, Gen)), Gen).
 
 replace_single_value_in_list(Index, Value, List) ->
