@@ -1,23 +1,15 @@
-#!/usr/bin/env escript
-%% -*- erlang -*-
+
 -mode(compile).
-main(_)->Ib=[[0,1,0,0,0],[1,0,0,1,1],[1,1,0,0,1],[0,1,0,0,0],[1,0,0,0,1]],
-         Ob=[[0,0,0,0,0],[1,0,1,1,1],[1,1,1,1,1],[0,1,0,0,0],[0,0,0,0,0]],
-         Ob=e(Ib),io:format("Passed~n").
+main(_)->[[0,0,0,0,0],[1,0,1,1,1],[1,1,1,1,1],[0,1,0,0,0],[0,0,0,0,0]]=e([[0,1,0,0,0],[1,0,0,1,1],[1,1,0,0,1],[0,1,0,0,0],[1,0,0,0,1]]).
 e(1,2)->1;
 e(1,3)->1;
 e(1,_)->0;
 e(0,3)->1;
 e(0,_)->0.
 e(I)->i(I,I,fun e/8,1,1,1,1,l(n(1,I)),l(I)).
-e(I,O,X,Y,MnX,MnY,MxX,MxY)->sv(O,X,Y,e(gv(I,X,Y),nb(I,X,Y,MnX,MnY,MxX,MxY))).
-
-i(Ib,Ob,F,X,Y,MnX,MnY,MxX,MxY)->Ob1=F(Ib,Ob,X,Y,MnX,MnY,MxX,MxY),case Y of MxY->case X of MxX->Ob1; _->i(Ib,Ob1,F,X+1,MnY,MnX,MnY,MxX,MxY) end;_->i(Ib,Ob1,F,X,Y+1,MnX,MnY,MxX,MxY) end.
-
--define(FF(X,Y), F(Ib,Ob,X,Y,MnX,MnY,MxX,MxY)).
-i2(Ib,Ob,F,MxX,MxY,MnX,MnY,MxX,MxY)->?FF(MxX,MxY);i2(Ib,Ob,F,X,MxY,MnX,MnY,MxX,MxY)->i2(Ib,?FF(X,MxY),F,X+1,MnY,MnX,MnY,MxX,MxY);i2(Ib,Ob,F,X,Y,MnX,MnY,MxX,MxY)->i2(Ib,?FF(X,Y),F,X,Y+1,MnX,MnY,MxX,MxY).
-
-nb(Ib,X,Y,MnX,MnY,MxX,MxY)->X1=mx(MnX,X-1),Y1=mx(MnY,Y-1),i(Ib,0,fun sum/8,X1,Y1,X1,Y1,mn(MxX,X+1),mn(MxY,Y+1))-gv(Ib,X,Y).
+e(I,O,X,Y,Xa,Ya,Xz,Yz)->sv(O,X,Y,e(gv(I,X,Y),nb(I,X,Y,Xa,Ya,Xz,Yz))).
+i(Ib,Ob,F,X,Y,Xa,Ya,Xz,Yz)->Ob1=F(Ib,Ob,X,Y,Xa,Ya,Xz,Yz),case Y of Yz->case X of Xz->Ob1;_->i(Ib,Ob1,F,X+1,Ya,Xa,Ya,Xz,Yz)end;_->i(Ib,Ob1,F,X,Y+1,Xa,Ya,Xz,Yz)end.
+nb(Ib,X,Y,Xa,Ya,Xz,Yz)->X1=mx(Xa,X-1),Y1=mx(Ya,Y-1),i(Ib,0,fun sum/8,X1,Y1,X1,Y1,mn(Xz,X+1),mn(Yz,Y+1))-gv(Ib,X,Y).
 sum(Ib,T,X,Y,_,_,_,_)->T+gv(Ib,X,Y).
 gv(I,X,Y)->n(X,n(Y,I)).
 sv(I,X,Y,V)->lr(Y,lr(X,V,n(Y,I)),I).
