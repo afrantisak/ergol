@@ -1,9 +1,7 @@
 #!/usr/bin/env escript
 -mode(compile).
 main(_)->[[0,0,0,0,0],[1,0,1,1,1],[1,1,1,1,1],[0,1,0,0,0],[0,0,0,0,0]]=e([[0,1,0,0,0],[1,0,0,1,1],[1,1,0,0,1],[0,1,0,0,0],[1,0,0,0,1]]).
-e(1,2)->1;
-e(_,3)->1;
-e(_,_)->0.
+e(1,2)->1;e(_,3)->1;e(_,_)->0.
 e(I)->i(I,I,fun e/5,1,1,{1,1,l(n(1,I)),l(I)}).
 e(I,O,X,Y,S)->sv(O,X,Y,e(gv(I,X,Y),nb(I,X,Y,S))).
 i(Ib,Ob,F,X,Y,S={_,Ya,Xz,Yz})->Ob1=F(Ib,Ob,X,Y,S),case Y of Yz->case X of Xz->Ob1;_->i(Ib,Ob1,F,X+1,Ya,S)end;_->i(Ib,Ob1,F,X,Y+1,S)end.
