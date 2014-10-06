@@ -39,26 +39,25 @@ evolve_cell(Input_board, Output_board, Coord, Size) ->
     Value = get_value_at_coordinate(Input_board, Coord),
     evolve_value(Value, Input_board, Output_board, Coord, Size).
 
-evolve_value(live, Input_board, Output_board, Coord, Size) ->
-    case neighbors(Input_board, Coord, Size) of
-        2 -> set_value_at_coordinate(Output_board, Coord, live);
-        3 -> set_value_at_coordinate(Output_board, Coord, live);
-        _ -> set_value_at_coordinate(Output_board, Coord, dead)
-    end;
-evolve_value(dead, Input_board, Output_board, Coord, Size) ->
-    case neighbors(Input_board, Coord, Size) of
-        3 -> set_value_at_coordinate(Output_board, Coord, live);
-        _ -> set_value_at_coordinate(Output_board, Coord, dead)
-    end.
+evolve_value(State, Input_board, Output_board, Coord, Size) ->
+    Neighbors = neighbors(Input_board, Coord, Size),
+    New_value = evolve(State, Neighbors),
+    set_value_at_coordinate(Output_board, Coord, New_value).
 
-iterate_board(Input_board, Output_board, Function, Start, 
-          Size = #size{max = #coord{x = MaxX, y = MaxY}}) ->
+evolve(live, 2) -> live;
+evolve(live, 3) -> live;
+evolve(live, _) -> dead;
+evolve(dead, 3) -> live;
+evolve(dead, _) -> dead.    
+
+as_int(live) -> 1;
+as_int(dead) -> 0.
+
+iterate_board(Input_board, Output_board, Function, Start, Size = #size{max = #coord{x = MaxX, y = MaxY}}) ->
     Output_board1 = Function(Input_board, Output_board, Start, Size),
     case Start#coord.y of
-        %Size#size.max#coord.y ->
         MaxY ->
             case Start#coord.x of
-                %Size#size.max#coord.x ->
                 MaxX ->
                     Output_board1;
                 _ ->
@@ -69,9 +68,6 @@ iterate_board(Input_board, Output_board, Function, Start,
             NextRow = #coord{x = Start#coord.x, y = Start#coord.y + 1},
             iterate_board(Input_board, Output_board1, Function, NextRow, Size)
     end.
-
-as_int(live) -> 1;
-as_int(dead) -> 0.
 
 get_sum(Input_board, Total, Coord, _Size) ->
     Total + as_int(get_value_at_coordinate(Input_board, Coord)).
