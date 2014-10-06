@@ -26,11 +26,11 @@ main(_) ->
     Output = evolve(Input),
     io:format("Passed~n").
 
-evolve(live, Neighbors) when Neighbors < 2  -> dead; %% underpopulation
-evolve(live, Neighbors) when Neighbors > 3  -> dead; %% overcrowding
+evolve(live, Neighbors) when Neighbors < 2 -> dead; %% underpopulation
+evolve(live, Neighbors) when Neighbors > 3 -> dead; %% overcrowding
 evolve(live, _) -> live; %% survival
 evolve(dead, 3) -> live; %% reproduction
-evolve(dead, _) -> dead.
+evolve(dead, _) -> dead. %% stays dead
 
 -record(coord, {x, y}).
 -record(size, {min, max}).
@@ -41,14 +41,11 @@ evolve(Input_board) ->
     Board_size = #size{min = Upper_left, max = Lower_right},
     iterate_board(Input_board, Input_board, fun evolve_cell/4, Upper_left, Board_size).
 
-evolve_cell(Input_board, Output_board, Coord, Size) ->
-    Value = get_value(Input_board, Coord),
-    evolve_value(Value, Input_board, Output_board, Coord, Size).
-
-evolve_value(State, Input_board, Output_board, Coord, Size) ->
-    Neighbors = neighbors(Input_board, Coord, Size),
-    New_value = evolve(State, Neighbors),
-    set_value(Output_board, Coord, New_value).
+evolve_cell(Input_board, Output_board, Current_coord, Size) ->
+    Old_value = get_value(Input_board, Current_coord),
+    Neighbors = neighbors(Input_board, Current_coord, Size),
+    New_value = evolve(Old_value, Neighbors),
+    set_value(Output_board, Current_coord, New_value).
 
 iterate_board(Input_board, Output_board, Function, Start, Size = #size{max = #coord{x = MaxX, y = MaxY}}) ->
     Output_board1 = Function(Input_board, Output_board, Start, Size),
