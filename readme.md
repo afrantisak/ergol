@@ -2,11 +2,10 @@
 
 ## To run:
 
-    $ erl
+    $ ./ergol
 
-inside erlang repl:
+(You need erlang/escript installed)
 
-    c(ergol).
-    ergol:test().
+    apt-get install erlang
 
-If it passed (Gen1 evolves into Gen2 as expected) it will report passed.  If it failed it will report the result.
+If it passed (Gen1 evolves into Gen2 as expected) it will report Passed.  If it failed it will report the result.

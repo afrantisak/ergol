@@ -1,7 +1,5 @@
--module(ergol).
-
--export([test/0]).
-
+#!/usr/bin/env escript
+%% -*- erlang -*-
 % "Game of Life".
 % The input will be a game board of cells, either alive (1) or dead (0).
 % The code should take this board and create a new board for the
@@ -11,8 +9,9 @@
 %     the next generation (survival)
 %  3) Any live cell with more than three live neighbours dies (overcrowding)
 %  4) Any dead cell with exactly three live neighbours becomes a live cell (reproduction)
+-mode(compile).
 
-test() ->
+main(_) ->
     Input =  [[0, 1, 0, 0, 0],
               [1, 0, 0, 1, 1],
               [1, 1, 0, 0, 1],
