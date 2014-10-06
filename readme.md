@@ -2,7 +2,7 @@
 
 ## To run:
 
-    $ ./ergol
+    $ ./ergol.escript
 
 (You need erlang/escript installed)
 
