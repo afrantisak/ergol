@@ -26,7 +26,7 @@ main(_)->
 
 evolve(Board) ->
     Board_dimensions = {1, 1, length(lists:nth(1, Board)), length(Board)},
-    transform_board_subset(Board, fun evolve_board_cell/3, Board_dimensions).
+    transform_board_subset(Board, bind(fun evolve_board_cell/3, Board_dimensions), Board_dimensions).
 
 evolve_board_cell(Board, Position, Subset_dimensions) ->
     Value = get_board_cell_value(Board, Position),
@@ -39,11 +39,16 @@ evolve_cell(_, _) -> 0.
 
 count_neighbors(Board, Position = {X, Y}, {MinX, MinY, MaxX, MaxY}) ->
     Neighbor_subset_dimensions = {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)},
-    Neighbor_board = transform_board_subset(Board, fun(B, P, _) -> get_board_cell_value(B, P) end, Neighbor_subset_dimensions),
+    Neighbor_board = transform_board_subset(Board, fun get_board_cell_value/2, Neighbor_subset_dimensions),
     accumulate_board(Neighbor_board) - get_board_cell_value(Board, Position).
 
-transform_board_subset(Board, Function, Subset_dimensions = {MinX, MinY, MaxX, MaxY}) ->
-    [[Function(Board, {X, Y}, Subset_dimensions) || X <- lists:seq(MinX, MaxX)] || Y <- lists:seq(MinY, MaxY)].
+bind(Function, Subset_dimensions) ->
+    fun(Board, Position) ->
+            Function(Board, Position, Subset_dimensions)
+    end.
+
+transform_board_subset(Board, Function, {MinX, MinY, MaxX, MaxY}) ->
+    [[Function(Board, {X, Y}) || X <- lists:seq(MinX, MaxX)] || Y <- lists:seq(MinY, MaxY)].
 
 accumulate_board(Board) ->
     lists:sum([lists:sum(Board_row) || Board_row <- Board]).
