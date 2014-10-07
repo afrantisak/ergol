@@ -8,4 +8,4 @@
 
     apt-get install erlang
 
-If it passed (Gen1 evolves into Gen2 as expected) it will report Passed.  If it failed it will report the result.
+If it passed (Input evolves into Output as expected) it will print nothing and return 0 to the shell.  If it failed it will return 1 and report the result.
