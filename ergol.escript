@@ -42,9 +42,9 @@ count_neighbors(Board, Position = {X, Y}, {MinX, MinY, MaxX, MaxY}) ->
     Neighbor_board = transform_board_subset(Board, fun get_board_cell_value/2, Neighbor_subset_dimensions),
     accumulate_board(Neighbor_board) - get_board_cell_value(Board, Position).
 
-bind(Function, Subset_dimensions) ->
-    fun(Board, Position) ->
-            Function(Board, Position, Subset_dimensions)
+bind(Function_with_3_args, Arg3) ->
+    fun(Arg1, Arg2) ->
+        Function_with_3_args(Arg1, Arg2, Arg3)
     end.
 
 transform_board_subset(Board, Function, {MinX, MinY, MaxX, MaxY}) ->
