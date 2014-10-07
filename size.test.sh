@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
-escript golf.erl
-wc -c golf.erl
+escript ergol.golfed.escript
+wc -c ergol.golfed.escript
