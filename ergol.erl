@@ -14,43 +14,30 @@ main(_)->
               [1, 0, 0, 0, 1]],
     Output = evolve(Input).
 
-evolve(1, 2) -> 1;
-evolve(_, 3) -> 1;
-evolve(_, _) -> 0.
-
-evolve(Board, Position, Size) ->
-    evolve(get_value(Board, Position), neighbors(Board, Position, Size)).
-
 evolve(Board) ->
-    iterate(Board, fun evolve/3, {1, 1, l(n(1, Board)), l(Board)}).
+    Board_dimensions = {1, 1, length(lists:nth(1, Board)), length(Board)},
+    transform_board_subset(Board, fun evolve_board_cell/3, Board_dimensions).
 
-iterate(Board, F, Size = {MinX, MinY, MaxX, MaxY}) ->
-    [[ F(Board, {X, Y}, Size) || X <- r(MinX, MaxX)] || Y <- r(MinY, MaxY)].
+evolve_board_cell(Board, Position, Subset_dimensions) ->
+    Value = get_board_cell_value(Board, Position),
+    Neighbor_count = count_neighbors(Board, Position, Subset_dimensions),
+    evolve_cell(Value, Neighbor_count).
 
-neighbors(Board, P = {X, Y}, {MinX, MinY, MaxX, MaxY}) ->
-    a([ 
-       a(R) ||
-           R <-
-               iterate(Board,
-                       fun(J, E, _) ->
-                              get_value(J, E)
-                       end,
-                       {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)})
-      ])
-    -
-    get_value(Board, P).
+evolve_cell(1, 2) -> 1;
+evolve_cell(_, 3) -> 1;
+evolve_cell(_, _) -> 0.
 
-get_value(Board, {X, Y}) ->
-    n(X, n(Y, Board)).
+count_neighbors(Board, Position = {X, Y}, {MinX, MinY, MaxX, MaxY}) ->
+    Neighbor_subset_dimensions = {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)},
+    Neighbor_board = transform_board_subset(Board, fun(B, P, _) -> get_board_cell_value(B, P) end, Neighbor_subset_dimensions),
+    accumulate_board(Neighbor_board) - get_board_cell_value(Board, Position).
 
-n(Index, List)->
-    lists:nth(Index, List).
+transform_board_subset(Board, Function, Subset_dimensions = {MinX, MinY, MaxX, MaxY}) ->
+    [[Function(Board, {X, Y}, Subset_dimensions) || X <- lists:seq(MinX, MaxX)] || Y <- lists:seq(MinY, MaxY)].
 
-r(L,R)->
-    lists:seq(L, R).
+accumulate_board(Board) ->
+    lists:sum([lists:sum(Board_row) || Board_row <- Board]).
 
-l(L)->
-    length(L).
+get_board_cell_value(Board, {X, Y}) ->
+    lists:nth(X, lists:nth(Y, Board)).
 
-a(L)->
-    lists:sum(L).
