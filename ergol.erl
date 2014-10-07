@@ -1,4 +1,6 @@
 #!/usr/bin/env escript
+-mode(compile).
+
 main(_)->
     Output = [[0, 0, 0, 0, 0],
               [1, 0, 1, 1, 1],
@@ -12,39 +14,37 @@ main(_)->
               [1, 0, 0, 0, 1]],
     Output = evolve(Input).
 
-e(1, 2) -> 1;
-e(_, 3) -> 1;
-e(_, _) -> 0.
+evolve(1, 2) -> 1;
+evolve(_, 3) -> 1;
+evolve(_, _) -> 0.
 
-evolve(I) ->
-    iterate(I,
-            fun(J, P, S) ->
-                   e(get_value(J, P), neighbors(J, P, S))
-            end,
-            {1, 1, l(n(1, I)), l(I)}).
+evolve(Board, Position, Size) ->
+    evolve(get_value(Board, Position), neighbors(Board, Position, Size)).
 
+evolve(Board) ->
+    iterate(Board, fun evolve/3, {1, 1, l(n(1, Board)), l(Board)}).
 
-iterate(I, F, S = {A, B, C, D}) ->
-    [[ F(I, {X, Y}, S) || X <- r(A, C)] || Y <- r(B, D)].
+iterate(Board, F, Size = {MinX, MinY, MaxX, MaxY}) ->
+    [[ F(Board, {X, Y}, Size) || X <- r(MinX, MaxX)] || Y <- r(MinY, MaxY)].
 
-neighbors(I, P = {X, Y}, {A, B, C, D}) ->
+neighbors(Board, P = {X, Y}, {MinX, MinY, MaxX, MaxY}) ->
     a([ 
        a(R) ||
            R <-
-               iterate(I,
+               iterate(Board,
                        fun(J, E, _) ->
                               get_value(J, E)
                        end,
-                       {max(A, X - 1), max(B, Y - 1), min(C, X + 1), min(D, Y + 1)})
+                       {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)})
       ])
     -
-    get_value(I, P).
+    get_value(Board, P).
 
-get_value(I, {X, Y}) ->
-    n(X, n(Y, I)).
+get_value(Board, {X, Y}) ->
+    n(X, n(Y, Board)).
 
-n(I,L)->
-    lists:nth(I, L).
+n(Index, List)->
+    lists:nth(Index, List).
 
 r(L,R)->
     lists:seq(L, R).
