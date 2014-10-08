@@ -1,5 +1,5 @@
 
-main(_)->[[0,0,0,0,0],[1,0,1,1,1],[1,1,1,1,1],[0,1,0,0,0],[0,0,0,0,0]]=e([[0,1,0,0,0],[1,0,0,1,1],[1,1,0,0,1],[0,1,0,0,0],[1,0,0,0,1]]).
+main(_)->{ok,I}=io:read(standard_io,""),lists:foreach(fun(X)->io:format("~p~n",[X])end,e(I)).
 e(1,2)->1;e(_,3)->1;e(_,_)->0.
 e(I)->i(I,fun(J,P,S)->e(v(J,P),n(J,P,S))end,{1,1,length(l(1,I)),length(I)}).
 i(I,F,S={A,B,C,D})->[[F(I,{X,Y},S)||X<-lists:seq(A,C)]||Y<-lists:seq(B,D)].
