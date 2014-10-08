@@ -48,11 +48,11 @@ transform(Board, Function, {MinX, MinY, MaxX, MaxY}) ->
     [[Function(Board, {X, Y}) || X <- lists:seq(MinX, MaxX)] || Y <- lists:seq(MinY, MaxY)].
 
 get_entire_region(Board) ->
-    {1, 1, length(lists:nth(1, Board)), length(Board)}.
+    {1, 1, erlang:length(lists:nth(1, Board)), erlang:length(Board)}.
 
 get_neighbor_region(Board, {X, Y}) ->
     {MinX, MinY, MaxX, MaxY} = get_entire_region(Board),
-    {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)}.
+    {erlang:max(MinX, X - 1), erlang:max(MinY, Y - 1), erlang:min(MaxX, X + 1), erlang:min(MaxY, Y + 1)}.
 
 accumulate(Board, Function) ->
     Function([Function(Board_row) || Board_row <- Board]).
