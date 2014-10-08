@@ -1,5 +1,6 @@
 #!/usr/bin/env escript
 -mode(compile).
+-export([get_neighbor_region_toroidal/2, get_cell_value_toroidal/2, get_cell_position_modulus/2, mod/2]).
 
 % "Game of Life".
 % The input will be a game board of cells, either alive (1) or dead (0).
@@ -54,9 +55,24 @@ get_neighbor_region(Board, {X, Y}) ->
     {MinX, MinY, MaxX, MaxY} = get_entire_region(Board),
     {erlang:max(MinX, X - 1), erlang:max(MinY, Y - 1), erlang:min(MaxX, X + 1), erlang:min(MaxY, Y + 1)}.
 
+get_neighbor_region_toroidal(_Board, {X, Y}) ->
+    {X - 1, Y - 1, X + 1, Y + 1}.
+
 accumulate(Board, Function) ->
     Function([Function(Board_row) || Board_row <- Board]).
 
 get_cell_value(Board, {X, Y}) ->
     lists:nth(X, lists:nth(Y, Board)).
 
+get_cell_value_toroidal(Board, Cell_position) ->
+    {X0, Y0} = get_cell_position_modulus(Board, Cell_position),
+    get_cell_value(Board, {X0 + 1, Y0 + 1}).
+
+get_cell_position_modulus(Board, {X, Y}) ->
+    {_, _, MaxX, MaxY} = get_entire_region(Board),
+    {mod(X, MaxX), mod(Y, MaxY)}.
+
+mod(X, Y) when X > 0 -> X rem Y;
+mod(X, Y) when X < 0 -> Y + X rem Y;
+mod(0, _) -> 0.
+    
