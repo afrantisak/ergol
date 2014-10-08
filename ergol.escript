@@ -25,38 +25,38 @@ main(_)->
     Output = evolve(Input).
 
 evolve(Board) ->
-    transform(Board, fun evolve_board_cell/2).
+    transform(Board, fun evolve_cell/2).
 
-evolve_board_cell(Board, Position) ->
-    Value = get_board_cell_value(Board, Position),
-    Neighbor_count = count_neighbors(Board, Position),
-    evolve_cell(Value, Neighbor_count).
+evolve_cell(Board, Cell_position) ->
+    Cell_value = get_cell_value(Board, Cell_position),
+    Neighbor_count = count_neighbors(Board, Cell_position),
+    evolve_cell_value(Cell_value, Neighbor_count).
 
-evolve_cell(1, 2) -> 1;
-evolve_cell(_, 3) -> 1;
-evolve_cell(_, _) -> 0.
+evolve_cell_value(1, 2) -> 1;
+evolve_cell_value(_, 3) -> 1;
+evolve_cell_value(_, _) -> 0.
 
 count_neighbors(Board, Position) ->
-    Neighbor_subset_dimensions = get_neighbor_region(Board, Position),
-    Neighbor_board = transform(Board, fun get_board_cell_value/2, Neighbor_subset_dimensions),
-    accumulate(Neighbor_board, fun lists:sum/1) - get_board_cell_value(Board, Position).
+    Neighbor_region = get_neighbor_region(Board, Position),
+    Neighbor_board = transform(Board, fun get_cell_value/2, Neighbor_region),
+    accumulate(Neighbor_board, fun lists:sum/1) - get_cell_value(Board, Position).
 
 transform(Board, Function) ->
-    transform(Board, Function, get_region(Board)).
+    transform(Board, Function, get_entire_region(Board)).
 
 transform(Board, Function, {MinX, MinY, MaxX, MaxY}) ->
     [[Function(Board, {X, Y}) || X <- lists:seq(MinX, MaxX)] || Y <- lists:seq(MinY, MaxY)].
 
-get_region(Board) ->
+get_entire_region(Board) ->
     {1, 1, length(lists:nth(1, Board)), length(Board)}.
 
 get_neighbor_region(Board, {X, Y}) ->
-    {MinX, MinY, MaxX, MaxY} = get_region(Board),
+    {MinX, MinY, MaxX, MaxY} = get_entire_region(Board),
     {max(MinX, X - 1), max(MinY, Y - 1), min(MaxX, X + 1), min(MaxY, Y + 1)}.
 
 accumulate(Board, Function) ->
     Function([Function(Board_row) || Board_row <- Board]).
 
-get_board_cell_value(Board, {X, Y}) ->
+get_cell_value(Board, {X, Y}) ->
     lists:nth(X, lists:nth(Y, Board)).
 
